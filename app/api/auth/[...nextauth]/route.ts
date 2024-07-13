@@ -1,13 +1,13 @@
-import bcrypt from 'bcrypt';
+import { PrismaAdapter } from '@next-auth/prisma-adapter';
+import brcypt from 'bcrypt';
 import NextAuth, { AuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GithubProvider from 'next-auth/providers/github';
 import GoogleProvider from 'next-auth/providers/google';
-import { PrismaAdapter } from '@next-auth/prisma-adapter';
 
 import prisma from '@/app/libs/prismadb';
 
-export const authOptions: AuthOptions = {
+export const authOptions = {
     adapter: PrismaAdapter(prisma),
     providers: [
         GithubProvider({
@@ -19,29 +19,27 @@ export const authOptions: AuthOptions = {
             clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
         }),
         CredentialsProvider({
-            name: 'credentials',
+            name: 'Credentials',
             credentials: {
                 email: { label: 'email', type: 'text' },
                 password: { label: 'password', type: 'password' },
             },
             async authorize(credentials) {
                 if (!credentials?.email || !credentials?.password) {
-                    throw new Error('Invalid Credentials');
+                    throw new Error('Invalid credentials');
                 }
 
                 const user = await prisma.user.findUnique({
-                    where: {
-                        email: credentials.email,
-                    },
+                    where: { email: credentials.email },
                 });
 
-                if (!user || !user.hashedPassword) {
-                    throw new Error('Invalid Credentials');
+                if (!user || !user?.hashedPassword) {
+                    throw new Error('Invalid credentials');
                 }
 
-                const isCorrectPassword = await bcrypt.compare(credentials.password, user.hashedPassword);
+                const isPasswordCorrect = await brcypt.compare(credentials.password, user.hashedPassword);
 
-                if (!isCorrectPassword) {
+                if (!isPasswordCorrect) {
                     throw new Error('Invalid credentials');
                 }
 
@@ -56,6 +54,6 @@ export const authOptions: AuthOptions = {
     secret: process.env.NEXTAUTH_SECRET,
 };
 
-const handler = NextAuth(authOptions);
+const handler = NextAuth(authOptions as AuthOptions);
 
 export { handler as GET, handler as POST };
