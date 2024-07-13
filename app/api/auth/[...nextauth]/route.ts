@@ -1,6 +1,6 @@
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import bcrypt from 'bcrypt';
-import NextAuth, { AuthOptions } from 'next-auth';
+import NextAuth, { AuthOptions, SessionStrategy } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GithubProvider from 'next-auth/providers/github';
 import GoogleProvider from 'next-auth/providers/google';
@@ -49,7 +49,7 @@ export const authOptions: AuthOptions = {
     ],
     debug: process.env.NODE_ENV === 'development',
     session: {
-        strategy: 'jwt' as const, // Chuyển thành kiểu cụ thể
+        strategy: 'jwt' as SessionStrategy, // Đảm bảo kiểu dữ liệu chính xác
     },
     secret: process.env.NEXTAUTH_SECRET,
 };
