@@ -1,13 +1,12 @@
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import bcrypt from 'bcrypt';
-import NextAuth, { AuthOptions, SessionStrategy } from 'next-auth';
+import NextAuth, { AuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GithubProvider from 'next-auth/providers/github';
 import GoogleProvider from 'next-auth/providers/google';
-
 import prisma from '@/app/libs/prismadb';
 
-export const authOptions: AuthOptions = {
+const authOptions: AuthOptions = {
     adapter: PrismaAdapter(prisma),
     providers: [
         GithubProvider({
@@ -33,7 +32,7 @@ export const authOptions: AuthOptions = {
                     where: { email: credentials.email },
                 });
 
-                if (!user || !user?.hashedPassword) {
+                if (!user || !user.hashedPassword) {
                     throw new Error('Invalid credentials');
                 }
 
@@ -49,11 +48,11 @@ export const authOptions: AuthOptions = {
     ],
     debug: process.env.NODE_ENV === 'development',
     session: {
-        strategy: 'jwt' as SessionStrategy, // Đảm bảo kiểu dữ liệu chính xác
+        strategy: 'jwt',
     },
     secret: process.env.NEXTAUTH_SECRET,
 };
 
-const handler = NextAuth(authOptions);
+const handler = (req: any, res: any) => NextAuth(req, res, authOptions);
 
 export { handler as GET, handler as POST };
